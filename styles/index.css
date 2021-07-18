@@ -1,0 +1,80 @@
+:root {
+  --zoomlevel: 1px;
+}
+.bg {
+  background-color: #383838;
+}
+body {
+  overflow: none;
+}
+main {
+  flex: 3;
+  background-color: #383838;
+  height: 100vh;
+}
+
+.wrapper {
+  display: flex;
+  overflow: none;
+}
+
+.noselect {
+  -webkit-touch-callout: none; 
+    -webkit-user-select: none; 
+     -khtml-user-select: none; 
+       -moz-user-select: none; 
+        -ms-user-select: none; 
+            user-select: none; 
+}
+
+.border-fix{
+  border-radius:25px 25px 10px 10px;
+  border: 2px solid white;
+}
+
+.map {
+  z-index: 5;
+}
+.button-wrapper {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+}
+.info-btn {
+  float: right;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 5px 30px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  transition-duration: 1.0s;
+  -webkit-transition-duration: 1.0s;
+}
+
+.leaflet-container .leaflet-control-mouseposition {
+  padding: 10px;
+  margin: 15px;
+  color: #ffffff;
+  font: 18px "consolas";
+  border-radius: 15px;
+  background-color: #383838;
+}
+
+.leaflet-tooltip.city1, .leaflet-tooltip.city2, .leaflet-tooltip.city3 {
+  background-color: transparent;
+  border: transparent;
+  box-shadow: none;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000, -1px 0 0 #000;
+  font: calc(var(--zoomlevel) + 9px) "consolas";
+}
+.leaflet-tooltip.city2 {
+  font-size: calc(var(--zoomlevel) + 7px);
+}
+.leaflet-tooltip.city3 {
+  font-size: calc(var(--zoomlevel) + 5px);
+}
