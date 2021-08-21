@@ -15,6 +15,7 @@ var iconHatch = generateIcon("icon-hatch");
 var iconQuest = generateIcon("icon-quest");
 var iconRadio = generateIcon("icon-radio");
 var iconChest = generateIcon("icon-chest");
+var iconEntryway = generateIcon("icon-entryway");
 var iconBoss = generateIcon("icon-boss");
 var iconTomb = generateIcon("icon-tomb");
 var iconRift = generateIcon("icon-rift");
