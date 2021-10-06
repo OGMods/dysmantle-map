@@ -117,6 +117,7 @@ var groupWishingWell = createSub();
 var groupTerminal = createSub();
 var groupEntryway = createSub();
 var groupHatch = createSub();
+var groupShelterLoudspeaker = createSub();
 var groupAudioLog = createSub();
 var groupMythTablet = createSub();
 var groupFarmable = createSub();
@@ -159,6 +160,7 @@ var groupedOverlays = {
 		[`${getIcon("icon-terminal")} Terminal`]: groupTerminal,
 		[`${getIcon("icon-entryway")} Entryway`]: groupEntryway,
 		[`${getIcon("icon-hatch")} Shelter`]: groupHatch,
+		[`${getIcon("icon-shelter-loudspeaker")} Shelter Loudspeaker`]: groupShelterLoudspeaker,
 		[`${getIcon("icon-audio-log")} Audio Log`]: groupAudioLog,
 		[`${getIcon("icon-myth-tablet")} Myth Tablet`]: groupMythTablet,
 		[`${getIcon("icon-farmable")} Farmable`]: groupFarmable,

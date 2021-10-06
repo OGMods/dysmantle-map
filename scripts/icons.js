@@ -12,6 +12,7 @@ var iconTerminal = generateIcon("icon-terminal");
 var iconCampfire = generateIcon("icon-campfire");
 var iconFixable = generateIcon("icon-fixable");
 var iconHatch = generateIcon("icon-hatch");
+var iconShelterLoudspeaker = generateIcon("icon-shelter-loudspeaker");
 var iconQuest = generateIcon("icon-quest");
 var iconRadio = generateIcon("icon-radio");
 var iconChest = generateIcon("icon-chest");
