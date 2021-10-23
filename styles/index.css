@@ -6,6 +6,7 @@
 }
 body {
   overflow: none;
+  font-family: 'Roboto Condensed', sans-serif;
 }
 main {
   flex: 3;
@@ -26,7 +27,81 @@ main {
         -ms-user-select: none; 
             user-select: none; 
 }
-
+.flex-center{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.parent {
+  background-color: #00000080;
+  position: absolute;
+  max-height: 100vh;
+  max-width: 100vw;
+  bottom: 0px;
+  right: 0px;
+  left:0px;
+  top: 0px;
+  z-index: 100;
+}
+.panel-parent {
+  flex-direction: column;
+  border-image-source: url(../images/panel.png);
+  border-image-slice: 47 fill;
+  border-image-width: 47px;
+  margin: 50px 12px;
+  min-width: 200px;
+  min-height: 200px;
+}
+.panel-footer {
+  margin-bottom: 18px;
+}
+.panel{
+  max-height: calc(100vh - 140px);
+  max-width: calc(100vw - 48px);
+  scrollbar-gutter: stable;
+  white-space: nowrap;
+  color: white;
+  padding: 8px;
+  margin: 16px;
+  overflow: auto;
+  font-size: 18px;
+}
+.panel::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.panel::-webkit-scrollbar-track {
+  background-color: #11100E;
+  border-radius: 100px;
+}
+.panel::-webkit-scrollbar-thumb {
+  background-color: #EEEEEE;
+  border-radius: 100px;
+  background-clip: content-box;
+}
+.panel::-webkit-scrollbar-corner {
+  background: rgba(0,0,0,0);
+}
+.title{
+  font-size: 22px;
+  font-weight: bold;
+}
+.item {
+  display: inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-image-source: url(../images/item-bg.png);
+  border-image-slice: 8 fill;
+  border-image-width: 8px;
+  margin: 4px;
+  min-width: 48px;
+  min-height: 48px;
+}
+.item img{
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
 .border-fix{
   border-radius:25px 25px 10px 10px;
   border: 2px solid white;
@@ -38,22 +113,25 @@ main {
 .button-wrapper {
   position: absolute;
   right: 0;
-  bottom: 0;
+  bottom: 15px;
   z-index: 8;
 }
 .info-btn {
   float: right;
   box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-  font-family: 'Roboto Condensed', sans-serif;
   font-size: 18px;
   font-weight: 600;
-  padding: 5px 30px;
+  padding: 5px 18px;
   margin-right: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   transition-duration: 1.0s;
   -webkit-transition-duration: 1.0s;
 }
-
+@media (max-width: 400px) {
+  .button-wrapper {
+    bottom: 80px;
+  }
+}
 .leaflet-container .leaflet-control-mouseposition {
   padding: 10px;
   margin: 15px;
