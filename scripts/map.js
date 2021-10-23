@@ -38,26 +38,17 @@ const undercrownLayer = L.tileLayer('tiles_undercrown/{z}/{x}/{y}.jpg', {
 	bounds: maxBoundsUndercrown,
 	tms: false,
 });
-
-$("#btnSwitch").click(function (event) {
-	if (map.hasLayer(mainLayer)) {
-		$("#btnSwitch").html("Island Map");
-		lastBoundsIsland = map.getBounds();
-		map.removeLayer(mainLayer);
-		map.addLayer(undercrownLayer);
-		currentIsland = "undercrown";
-		updateBounds(maxBoundsUndercrown, lastBoundsUndercrown);
-	} else {
-		$("#btnSwitch").html("Undercrown Map");
-		lastBoundsUndercrown = map.getBounds();
-		map.removeLayer(undercrownLayer);
-		map.addLayer(mainLayer);
-		currentIsland = "island";
-		updateBounds(maxBoundsIsland, lastBoundsIsland);
-	}
-	updateData();
+$("#btnSwitch").click(() => switchMap());
+// Setup donate and POI buttons
+$(".poi-btn").click(function () {
+	$("#pois-dialog").fadeToggle(400);
 });
-
+$(".donate-btn").click(function () {
+	$("#donate-dialog").fadeToggle(400);
+});
+$(".parent").click(function (e) {
+	if ($(e.target).hasClass("parent")) $(e.target).fadeOut(400);
+});
 // listen for zoom events to change the location name font-size
 map.on('zoomend', function () {
 	var zoomLevel = map.getZoom() * 2;
@@ -112,6 +103,8 @@ var groupChest = createSub();
 var groupFishingSpot = createSub();
 var groupArenaObelisk = createSub();
 var groupLinkTower = createSub();
+var groupLinkRelay = createSub();
+var groupFuelCell = createSub();
 var groupTomb = createSub();
 var groupWishingWell = createSub();
 var groupTerminal = createSub();
@@ -155,6 +148,8 @@ var groupedOverlays = {
 		[`${getIcon("icon-fishing-spot")} Fishing Spot`]: groupFishingSpot,
 		[`${getIcon("icon-arena-obelisk")} Arena Obelisk`]: groupArenaObelisk,
 		[`${getIcon("icon-link-tower")} Link Tower`]: groupLinkTower,
+		[`${getIcon("icon-link-relay")} Link Relay`]: groupLinkRelay,
+		[`${getIcon("icon-fuel-cell")} Fuel Cell`]: groupFuelCell,
 		[`${getIcon("icon-tomb")} Tomb`]: groupTomb,
 		[`${getIcon("icon-wishing-well")} Wishing Well`]: groupWishingWell,
 		[`${getIcon("icon-terminal")} Terminal`]: groupTerminal,
@@ -195,6 +190,7 @@ $(function () {
 			} else {
 				markersData = data;
 				updateData();
+				setupPOIScreen();
 			}
 		},
 		error: function () {
@@ -214,7 +210,7 @@ function updateData() {
 				// Adding a marker if it's a POI
 				L.marker(pos, {
 					icon: eval(marker.icon),
-				}).bindPopup(marker.description).addTo(eval(marker.group));
+				}).bindPopup(marker.id + "\n" + marker.description).addTo(eval(marker.group));
 			} else if (marker.type == "loc") {
 				// Adding a label if it's a location
 				L.marker(pos, { opacity: 0.0, interactive: false })
@@ -227,9 +223,62 @@ function updateData() {
 		}
 	});
 }
-function updateBounds(maxBounds, fitBounds){
+// Setting up the point of interests dialog
+function setupPOIScreen() {
+	var html = "";
+	for (let index = 1; index <= 20; index++) {
+		const area = getAreaName(index);
+		const pois = markersData.filter((poi) => poi.t == index);
+		html += `<div class="title">${area}:</div>`;
+		pois.forEach((poi, i) => {
+			html += `<div data-id="${poi.id}" class="item"><img src="${getIconPath(poi.icon)}"/></div>`;
+			if ((i + 1) % 12 == 0) html += "<br>";
+		});
+	}
+	document.getElementById("pois").innerHTML = html;
+	$(".item").click(function (e) {
+		const obj = $(e.target);
+		const id = (obj.is("img") ? obj.parent() : obj).data("id");
+		const pois = markersData.filter((poi) => poi.id == id);
+		if (pois.length > 0) {
+			const poi = pois[0];
+			const loc = poi.map ?? "island";
+			$("#pois-dialog").fadeOut(250);
+			var pos = map.unproject([poi.x, poi.y], mapNativeMaxZoom);
+			if (currentIsland != loc) {
+				switchMap(pos);
+			} else {
+				map.flyTo(pos, 6, { animate: false });
+			}
+		}
+	});
+}
+function switchMap(pos) {
+	if (map.hasLayer(mainLayer)) {
+		$("#btnSwitch").html("Island Map");
+		lastBoundsIsland = map.getBounds();
+		map.removeLayer(mainLayer);
+		map.addLayer(undercrownLayer);
+		currentIsland = "undercrown";
+		updateBounds(maxBoundsUndercrown, lastBoundsUndercrown, pos);
+	} else {
+		$("#btnSwitch").html("Undercrown Map");
+		lastBoundsUndercrown = map.getBounds();
+		map.removeLayer(undercrownLayer);
+		map.addLayer(mainLayer);
+		currentIsland = "island";
+		updateBounds(maxBoundsIsland, lastBoundsIsland, pos);
+	}
+	updateData();
+}
+function updateBounds(maxBounds, fitBounds, pos) {
 	map.setMaxBounds(maxBounds);
-	map.fitBounds(fitBounds);
+	if (pos != null) {
+		map.fitBounds(fitBounds, { animate: false });
+		map.flyTo(pos, 6, { animate: false });
+	} else {
+		map.fitBounds(fitBounds);
+	}
 }
 function getIcon(file) {
 	return `<img src='images/icons/${file}.png' width='16' height='16'></img>`;
