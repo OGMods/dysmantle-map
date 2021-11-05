@@ -210,7 +210,7 @@ function updateData() {
 				// Adding a marker if it's a POI
 				L.marker(pos, {
 					icon: eval(marker.icon),
-				}).bindPopup(marker.id + "\n" + marker.description).addTo(eval(marker.group));
+				}).bindPopup(marker.description).addTo(eval(marker.group));
 			} else if (marker.type == "loc") {
 				// Adding a label if it's a location
 				L.marker(pos, { opacity: 0.0, interactive: false })
