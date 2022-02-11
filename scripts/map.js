@@ -2,6 +2,9 @@
 const maxBoundsIsland = [[0, 0], [-384, 768]];
 const maxBoundsUndercrown = [[0, 0], [(9 * -8), (14 * 8)]];
 const mapNativeMaxZoom = 5;
+var alwaysShowIcons = ['iconLinkTower', 'iconCampfire', 'iconRift'];
+var currentAlwaysShowIcons = alwaysShowIcons;
+var showCollected = false;
 var currentIsland = "island";
 var lastBoundsIsland = [
 	[maxBoundsIsland[1][0], 0], // SW
@@ -45,6 +48,18 @@ $(".poi-btn").click(function () {
 });
 $(".donate-btn").click(function () {
 	$("#donate-dialog").fadeToggle(400);
+});
+$(".toggle-camp-tower-btn").click(function () {
+	if (currentAlwaysShowIcons.length > 0) {
+		currentAlwaysShowIcons = [];
+	} else {
+		currentAlwaysShowIcons = alwaysShowIcons;
+	}
+	updateData();
+});
+$(".toggle-collected-btn").click(function () {
+	showCollected = !showCollected;
+	updateData();
 });
 $(".parent").click(function (e) {
 	if ($(e.target).hasClass("parent")) $(e.target).fadeOut(400);
@@ -199,58 +214,77 @@ $(function () {
 	});
 });
 // A method to update markers data depending on selected map
+var allPOIMarkers = {};
 function updateData() {
 	groups.forEach(group => {
 		group.clearLayers();
 	});
-	markersData.forEach(marker => {
-		var pos = map.unproject([marker.x, marker.y], mapNativeMaxZoom);
-		if (currentIsland == marker.map || (marker.map == null && currentIsland == "island")) {
-			if (marker.type == "poi") {
-				// Adding a marker if it's a POI
-				L.marker(pos, {
-					icon: eval(marker.icon),
-				}).bindPopup(marker.description).addTo(eval(marker.group));
-			} else if (marker.type == "loc") {
-				// Adding a label if it's a location
-				L.marker(pos, { opacity: 0.0, interactive: false })
-					.bindTooltip(marker.name, { permanent: true, direction: "center", className: `city${marker.size}`, offset: [0.5, 0.5] })
-					.addTo(eval(`groupCities${marker.size}`));
-			} else if (marker.type == "area") {
-				var polygon = L.polygon(eval(marker.border), { color: 'white', fill: false, weight: 2, opacity: 0.5, interactive: false }).addTo(groupBorders);
-				borderPolygons.push({ name: marker.tower, polygon });
+	getPOIStatuses().then((poiStatuses) => {
+		markersData.forEach(marker => {
+			var pos = map.unproject([marker.x, marker.y], mapNativeMaxZoom);
+			if (currentIsland == marker.map || (marker.map == null && currentIsland == "island")) {
+				if (marker.type == "poi") {
+					// Adding a marker if it's a POI
+					allPOIMarkers[marker.id] = {
+						data: marker,
+						marker: L.marker(pos, {
+							icon: eval(marker.icon),
+						}).bindPopup(marker.description + "<br><btn class='btn' onclick='togglePOIStatus(" + marker.id + ", true);'>&#x2705;</btn>")
+					};
+					var show = true;
+					if (poiStatuses.includes(marker.id)) {
+						show = false;
+					}
+					togglePOIMapDisplay(marker.id, show);
+				} else if (marker.type == "loc") {
+					// Adding a label if it's a location
+					L.marker(pos, { opacity: 0.0, interactive: false })
+						.bindTooltip(marker.name, { permanent: true, direction: "center", className: `city${ marker.size }`, offset: [0.5, 0.5] })
+						.addTo(eval(`groupCities${ marker.size }`));
+				} else if (marker.type == "area") {
+					var polygon = L.polygon(eval(marker.border), { color: 'white', fill: false, weight: 2, opacity: 0.5, interactive: false }).addTo(groupBorders);
+					borderPolygons.push({ name: marker.tower, polygon });
+				}
 			}
-		}
+		});
 	});
 }
+
+
 // Setting up the point of interests dialog
 function setupPOIScreen() {
 	var html = "";
-	for (let index = 1; index <= 20; index++) {
-		const area = getAreaName(index);
-		const pois = markersData.filter((poi) => poi.t == index);
-		html += `<div class="title">${area}:</div>`;
-		pois.forEach((poi, i) => {
-			html += `<div data-id="${poi.id}" class="item"><img src="${getIconPath(poi.icon)}"/></div>`;
-			if ((i + 1) % 12 == 0) html += "<br>";
-		});
-	}
-	document.getElementById("pois").innerHTML = html;
-	$(".item").click(function (e) {
-		const obj = $(e.target);
-		const id = (obj.is("img") ? obj.parent() : obj).data("id");
-		const pois = markersData.filter((poi) => poi.id == id);
-		if (pois.length > 0) {
-			const poi = pois[0];
-			const loc = poi.map ?? "island";
-			$("#pois-dialog").fadeOut(250);
-			var pos = map.unproject([poi.x, poi.y], mapNativeMaxZoom);
-			if (currentIsland != loc) {
-				switchMap(pos);
-			} else {
-				map.flyTo(pos, 6, { animate: false });
-			}
+	getPOIStatuses().then((poiStatuses) => {
+		for (let index = 1; index <= 20; index++) {
+			const area = getAreaName(index);
+			const pois = markersData.filter((poi) => poi.t == index);
+			html += `<div class="title">${area}:</div>`;
+			pois.forEach((poi, i) => {
+				var extraClass = '';
+				if (poiStatuses.includes(poi.id)) {
+					extraClass = ' collected';
+				}
+				html += `<div data-id="${poi.id}" class="item${extraClass}"><img src="${getIconPath(poi.icon)}"/></div>`;
+				if ((i + 1) % 12 == 0) html += "<br>";
+			});
 		}
+		document.getElementById("pois").innerHTML = html;
+
+		$(".item").click(function (e) {
+			const obj = $(e.target);
+			const id = (obj.is("img") ? obj.parent() : obj).data("id");
+			const pois = markersData.filter((poi) => poi.id == id);
+			if (pois.length > 0) {
+				const poi = pois[0];
+				const loc = poi.map ?? "island";
+				var pos = map.unproject([poi.x, poi.y], mapNativeMaxZoom);
+				if (currentIsland != loc) {
+					switchMap(pos);
+				} else {
+					togglePOIStatus(id, true);
+				}
+			}
+		});
 	});
 }
 function switchMap(pos) {
@@ -282,4 +316,51 @@ function updateBounds(maxBounds, fitBounds, pos) {
 }
 function getIcon(file) {
 	return `<img src='images/icons/${file}.png' width='16' height='16'></img>`;
+}
+
+async function getPOIStatuses () {
+	return localforage.getItem('poi-statuses').then((val) => {
+		return (val == null) ? [] : val;
+	});
+}
+
+async function togglePOIStatus (id, updateMap) {
+	var statuses = await getPOIStatuses();
+	const index = statuses.indexOf(id);
+	var poiCollected = false;
+	if (index > -1) {
+		statuses.splice(index, 1);
+		allPOIMarkers[id].marker.addTo(eval(allPOIMarkers[id].data.group));
+	} else {
+		statuses.push(id);
+		poiCollected = true;
+	}
+	togglePOIMapDisplay(id, poiCollected);
+
+	await localforage.setItem('poi-statuses', statuses);
+	setupPOIScreen();
+	if (updateMap) {
+		updateData();
+	}
+	return poiCollected;
+}
+
+async function togglePOIMapDisplay (id, collected) {
+	const marker = markersData.filter((poi) => poi.id == id)[0];
+	return (shouldShowIcon(marker.icon, collected ? true : false))
+		? allPOIMarkers[id].marker.addTo(eval(allPOIMarkers[id].data.group))
+		: allPOIMarkers[id].marker.remove()
+		;
+}
+
+function shouldShowIcon (icon, collected) {
+	if (currentAlwaysShowIcons.includes(icon)) {
+		return true;
+	}
+
+	if (icon == "iconFarmable") {
+		return false;
+	}
+
+	return (showCollected) ? true : collected;
 }
