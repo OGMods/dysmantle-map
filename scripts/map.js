@@ -1,6 +1,7 @@
 // The [-384, 768]=[(48 * -8), (96 * 8)] numbers are the map width(24,576) and height(12,288) projected to the map unit when the zoom is set to 5
 const maxBoundsIsland = [[0, 0], [-384, 768]];
 const maxBoundsUndercrown = [[0, 0], [(9 * -8), (14 * 8)]];
+const maxBoundsDlc1 = [[0, 0], [(23 * -8), (44 * 8)]];
 const mapNativeMaxZoom = 5;
 var alwaysShowIcons = ['iconLinkTower', 'iconCampfire', 'iconRift'];
 var currentAlwaysShowIcons = alwaysShowIcons;
@@ -12,6 +13,9 @@ var lastBoundsIsland = [
 ], lastBoundsUndercrown = [
 	[maxBoundsUndercrown[1][0], 0], // SW
 	[0, maxBoundsUndercrown[1][1]]  // NE
+], lastBoundsDlc1 = [
+	[maxBoundsDlc1[1][0], 0], // SW
+	[0, maxBoundsDlc1[1][1]]  // NE
 ];
 
 // Array that contains all polygons and their area name, array for the groups so we clear them later
@@ -41,6 +45,13 @@ const undercrownLayer = L.tileLayer('tiles_undercrown/{z}/{x}/{y}.jpg', {
 	bounds: maxBoundsUndercrown,
 	tms: false,
 });
+const dlc1Layer = L.tileLayer('tiles_dlc1/{z}/{x}/{y}.jpg', {
+	maxNativeZoom: mapNativeMaxZoom,
+	minNativeZoom: 3,
+	bounds: maxBoundsDlc1,
+	tms: false,
+});
+
 $("#btnSwitch").click(() => switchMap());
 // Setup donate and POI buttons
 $(".poi-btn").click(function () {
@@ -132,6 +143,9 @@ var groupFarmable = createSub();
 var groupFixable = createSub();
 var groupFabricator = createSub();
 var groupRift = createSub();
+var groupManaChamber = createSub();
+var groupEnergyRelay = createSub();
+var groupStash = createSub();
 var groupLock = createSub();
 var groupLock1 = createSub();
 var groupLock2 = createSub();
@@ -177,6 +191,9 @@ var groupedOverlays = {
 		[`${getIcon("icon-fixable")} Fixable`]: groupFixable,
 		[`${getIcon("icon-fabricator")} Fabricator`]: groupFabricator,
 		[`${getIcon("icon-rift")} Rift`]: groupRift,
+		[`${getIcon("icon-mana-chamber")} Mana Chamber`]: groupManaChamber,
+		[`${getIcon("icon-energy-relay")} Energy Relay`]: groupEnergyRelay,
+		[`${getIcon("icon-stash")} Stash`]: groupStash,
 		[`${getIcon("icon-lock")} Locked Door`]: groupLock,
 		[`${getIcon("icon-lock1")} Locked Door - Basic Lockpick`]: groupLock1,
 		[`${getIcon("icon-lock2")} Locked Door - Expert Lockpick`]: groupLock2,
@@ -255,7 +272,7 @@ function updateData() {
 function setupPOIScreen() {
 	var html = "";
 	getPOIStatuses().then((poiStatuses) => {
-		for (let index = 1; index <= 20; index++) {
+		for (let index = 1; index <= 21; index++) {
 			const area = getAreaName(index);
 			const pois = markersData.filter((poi) => poi.t == index);
 			html += `<div class="title">${area}:</div>`;
@@ -289,16 +306,20 @@ function setupPOIScreen() {
 }
 function switchMap(pos) {
 	if (map.hasLayer(mainLayer)) {
-		$("#btnSwitch").html("Island Map");
 		lastBoundsIsland = map.getBounds();
 		map.removeLayer(mainLayer);
 		map.addLayer(undercrownLayer);
 		currentIsland = "undercrown";
 		updateBounds(maxBoundsUndercrown, lastBoundsUndercrown, pos);
-	} else {
-		$("#btnSwitch").html("Undercrown Map");
+	} else if (map.hasLayer(undercrownLayer)) {
 		lastBoundsUndercrown = map.getBounds();
 		map.removeLayer(undercrownLayer);
+		map.addLayer(dlc1Layer);
+		currentIsland = "dlc1";
+		updateBounds(maxBoundsDlc1, lastBoundsDlc1, pos);
+	} else {
+		lastBoundsDlc1 = map.getBounds();
+		map.removeLayer(dlc1Layer);
 		map.addLayer(mainLayer);
 		currentIsland = "island";
 		updateBounds(maxBoundsIsland, lastBoundsIsland, pos);

@@ -117,17 +117,17 @@ main {
 }
 .button-wrapper {
   position: absolute;
-  right: 0;
+  left: 0;
   bottom: 15px;
   z-index: 8;
 }
 .info-btn {
-  float: right;
+  float: left;
   box-shadow: 0 1px 5px rgba(0,0,0,0.4);
   font-size: 18px;
   font-weight: 600;
   padding: 5px 18px;
-  margin-right: 10px;
+  margin-left: 10px;
   margin-bottom: 8px;
   transition-duration: 1.0s;
   -webkit-transition-duration: 1.0s;

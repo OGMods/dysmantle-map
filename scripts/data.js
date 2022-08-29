@@ -23,6 +23,9 @@ var iconBoss = generateIcon("icon-boss");
 var iconTomb = generateIcon("icon-tomb");
 var iconRift = generateIcon("icon-rift");
 var iconLock = generateIcon("icon-lock");
+var iconManaChamber = generateIcon("icon-mana-chamber");
+var iconEnergyRelay = generateIcon("icon-energy-relay");
+var iconStash = generateIcon("icon-stash");
 var iconLock1 = generateIcon("icon-lock1");
 var iconLock2 = generateIcon("icon-lock2");
 var iconLock3 = generateIcon("icon-lock3");
@@ -61,6 +64,9 @@ function getIconPath(icon) {
 		case "iconBoss": r = "icon-boss"; break;
 		case "iconTomb": r = "icon-tomb"; break;
 		case "iconRift": r = "icon-rift"; break;
+		case "iconManaChamber": r = "icon-mana-chamber"; break;
+		case "iconEnergyRelay": r = "icon-energy-relay"; break;
+		case "iconStash": r = "icon-stash"; break;
 		case "iconLock":
 		case "iconLock1":
 		case "iconLock2":
@@ -94,6 +100,7 @@ function getAreaName(area) {
 		case 18: n = "Serpent's Crossing"; break;
 		case 19: n = "Polaris"; break;
 		case 20: n = "Undercrown"; break;
+		case 21: n = "Underworld"; break;
 	}
 	return n;
 }
