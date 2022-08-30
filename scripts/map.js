@@ -96,8 +96,14 @@ L.control.mousePosition({
 			});
 			return `Point: ${lng}°, ${lat}°` + (area != null ? `<br>${area}` : "");
 		}
-		else {
+		else if (map.hasLayer(undercrownLayer)) {
 			return `Point: ${lng + 840}°, ${lat + 300}°<br>Undercrown`;
+		}
+		else if (map.hasLayer(dlc1Layer)) {
+			return `Point: ${lng + 40}°, ${lat}°<br>Underworld`;
+		}
+		else {
+			return `Point: ${lng}°, ${lat}°`;
 		}
 	}
 }).addTo(map);
