@@ -83,6 +83,7 @@ map.on('zoomend', function () {
 
 // Add the mouse postion control (bottom left) and update the cords
 L.control.mousePosition({
+	position: "bottomright",
 	format: function (e) {
 		var point = map.project(e.latlng, mapNativeMaxZoom);
 		var lng = L.Util.formatNum(point.x / 12.8, 0); // 12.8 is the aspect ratio of map unit to game unit
