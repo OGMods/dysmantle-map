@@ -100,7 +100,12 @@ L.control.mousePosition({
 			return `Point: ${lng + 840}°, ${lat + 300}°<br>Undercrown`;
 		}
 		else if (map.hasLayer(dlc1Layer)) {
-			return `Point: ${lng + 40}°, ${lat}°<br>Underworld`;
+			var area;
+			borderPolygons.forEach(b => {
+				if (area == null && b.polygon.contains(e.latlng))
+					area = b.name;
+			});
+			return `Point: ${lng + 40}°, ${lat}°` + (area != null ? `<br>${area}` : "<br>Underworld");
 		}
 		else {
 			return `Point: ${lng}°, ${lat}°`;
@@ -240,6 +245,7 @@ $(function () {
 // A method to update markers data depending on selected map
 var allPOIMarkers = {};
 function updateData() {
+	borderPolygons = [];
 	groups.forEach(group => {
 		group.clearLayers();
 	});
