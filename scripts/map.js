@@ -2,6 +2,7 @@
 const maxBoundsIsland = [[0, 0], [-384, 768]];
 const maxBoundsUndercrown = [[0, 0], [(9 * -8), (14 * 8)]];
 const maxBoundsDlc1 = [[0, 0], [(23 * -8), (44 * 8)]];
+const maxBoundsDlc2 = [[0, 0], [(23 * -8), (47 * 8)]];
 const mapNativeMaxZoom = 5;
 var alwaysShowIcons = ['iconLinkTower', 'iconCampfire', 'iconRift'];
 var currentAlwaysShowIcons = alwaysShowIcons;
@@ -16,6 +17,9 @@ var lastBoundsIsland = [
 ], lastBoundsDlc1 = [
 	[maxBoundsDlc1[1][0], 0], // SW
 	[0, maxBoundsDlc1[1][1]]  // NE
+], lastBoundsDlc2 = [
+	[maxBoundsDlc2[1][0], 0], // SW
+	[0, maxBoundsDlc2[1][1]]  // NE
 ];
 
 // Array that contains all polygons and their area name, array for the groups so we clear them later
@@ -49,6 +53,12 @@ const dlc1Layer = L.tileLayer('tiles_dlc1/{z}/{x}/{y}.jpg', {
 	maxNativeZoom: mapNativeMaxZoom,
 	minNativeZoom: 3,
 	bounds: maxBoundsDlc1,
+	tms: false,
+});
+const dlc2Layer = L.tileLayer('tiles_dlc2/{z}/{x}/{y}.jpg', {
+	maxNativeZoom: mapNativeMaxZoom,
+	minNativeZoom: 3,
+	bounds: maxBoundsDlc2,
 	tms: false,
 });
 
@@ -106,6 +116,14 @@ L.control.mousePosition({
 					area = b.name;
 			});
 			return `Point: ${lng + 40}°, ${lat}°` + (area != null ? `<br>${area}` : "<br>Underworld");
+		}
+		else if (map.hasLayer(dlc2Layer)) {
+			var area;
+			borderPolygons.forEach(b => {
+				if (area == null && b.polygon.contains(e.latlng))
+					area = b.name;
+			});
+			return `Point: ${lng}°, ${lat}°` + (area != null ? `<br>${area}` : "<br>Doomsday");
 		}
 		else {
 			return `Point: ${lng}°, ${lat}°`;
@@ -190,7 +208,6 @@ var groupedOverlays = {
 		[`${getIcon("icon-arena-obelisk")} Arena Obelisk`]: groupArenaObelisk,
 		[`${getIcon("icon-link-tower")} Link Tower`]: groupLinkTower,
 		[`${getIcon("icon-link-relay")} Link Relay`]: groupLinkRelay,
-		[`${getIcon("icon-fuel-cell")} Fuel Cell`]: groupFuelCell,
 		[`${getIcon("icon-tomb")} Tomb`]: groupTomb,
 		[`${getIcon("icon-wishing-well")} Wishing Well`]: groupWishingWell,
 		[`${getIcon("icon-terminal")} Terminal`]: groupTerminal,
@@ -209,7 +226,7 @@ var groupedOverlays = {
 		[`${getIcon("icon-lock")} Locked Door`]: groupLock,
 		[`${getIcon("icon-lock1")} Locked Door - Basic Lockpick`]: groupLock1,
 		[`${getIcon("icon-lock2")} Locked Door - Expert Lockpick`]: groupLock2,
-		[`${getIcon("icon-lock3")} Locked Door - Maser Lockpick`]: groupLock3,
+		[`${getIcon("icon-lock3")} Locked Door - Master Lockpick`]: groupLock3,
 	}
 };
 
@@ -269,8 +286,8 @@ function updateData() {
 				} else if (marker.type == "loc") {
 					// Adding a label if it's a location
 					L.marker(pos, { opacity: 0.0, interactive: false })
-						.bindTooltip(marker.name, { permanent: true, direction: "center", className: `city${ marker.size }`, offset: [0.5, 0.5] })
-						.addTo(eval(`groupCities${ marker.size }`));
+						.bindTooltip(marker.name, { permanent: true, direction: "center", className: `city${marker.size}`, offset: [0.5, 0.5] })
+						.addTo(eval(`groupCities${marker.size}`));
 				} else if (marker.type == "area") {
 					var polygon = L.polygon(eval(marker.border), { color: 'white', fill: false, weight: 2, opacity: 0.5, interactive: false }).addTo(groupBorders);
 					borderPolygons.push({ name: marker.tower, polygon });
@@ -330,9 +347,15 @@ function switchMap(pos) {
 		map.addLayer(dlc1Layer);
 		currentIsland = "dlc1";
 		updateBounds(maxBoundsDlc1, lastBoundsDlc1, pos);
-	} else {
+	} else if (map.hasLayer(dlc1Layer)) {
 		lastBoundsDlc1 = map.getBounds();
 		map.removeLayer(dlc1Layer);
+		map.addLayer(dlc2Layer);
+		currentIsland = "dlc2";
+		updateBounds(maxBoundsDlc2, lastBoundsDlc2, pos);
+	} else {
+		lastBoundsDlc2 = map.getBounds();
+		map.removeLayer(dlc2Layer);
 		map.addLayer(mainLayer);
 		currentIsland = "island";
 		updateBounds(maxBoundsIsland, lastBoundsIsland, pos);
@@ -352,13 +375,13 @@ function getIcon(file) {
 	return `<img src='images/icons/${file}.png' width='16' height='16'></img>`;
 }
 
-async function getPOIStatuses () {
+async function getPOIStatuses() {
 	return localforage.getItem('poi-statuses').then((val) => {
 		return (val == null) ? [] : val;
 	});
 }
 
-async function togglePOIStatus (id, updateMap) {
+async function togglePOIStatus(id, updateMap) {
 	var statuses = await getPOIStatuses();
 	const index = statuses.indexOf(id);
 	var poiCollected = false;
@@ -379,7 +402,7 @@ async function togglePOIStatus (id, updateMap) {
 	return poiCollected;
 }
 
-async function togglePOIMapDisplay (id, collected) {
+async function togglePOIMapDisplay(id, collected) {
 	const marker = markersData.filter((poi) => poi.id == id)[0];
 	return (shouldShowIcon(marker.icon, collected ? true : false))
 		? allPOIMarkers[id].marker.addTo(eval(allPOIMarkers[id].data.group))
@@ -387,7 +410,7 @@ async function togglePOIMapDisplay (id, collected) {
 		;
 }
 
-function shouldShowIcon (icon, collected) {
+function shouldShowIcon(icon, collected) {
 	if (currentAlwaysShowIcons.includes(icon)) {
 		return true;
 	}
